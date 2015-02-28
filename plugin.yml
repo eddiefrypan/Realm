@@ -1,27 +1,6 @@
 name: Realm
 main: com.eddiefrypan.realm.Main
-version: 1.8-1.5
-commands:
-  grant:
-    description: allows an op to designate a spot of land as a player's
-    usage: Syntax error! Perhaps you meant /grant <player>
-  revoke:
-    description: allows an op to take land away from players
-    usage: Syntax error! Perhaps you meant /revoke
-  realm:
-    description: displays the owner of the block or sets your realm's name
-    usage: Syntax error! Perhaps you meant /realm or /realm name <Name for your realm>
-  select:
-    description: select several blocks to give players permission to build on your land
-    usage: Syntax error! Perhaps you meant /select <start, end, cancel>
-  trust:
-    description: allow other players to build in your territory
-    usage: Syntax error! Perhaps you meant /trust <player> Make sure you have a selection
-  distrust:
-    description: take away other player's ability to build in your territory
-    usage: Syntax error! Perhaps you meant /distrust <player> Make sure you have a selection
+version: 1.8-2.0
 permissions:
-  grant:
-    default: op
-  revoke:
+  landlord:
     default: op

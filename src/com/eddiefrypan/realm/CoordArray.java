@@ -4,119 +4,119 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class CoordArray {
-	private Coord[] coords;
+    private Coord[] coords;
 
-	public CoordArray() {
-		coords = new Coord[0];
-	}
+    public CoordArray(Coord... coords) {
+        this.coords = coords;
+    }
 
-	public CoordArray(Coord[] coords) {
-		this.coords = coords;
-	}
+    public int size() {
+        int size = 0;
+        for (Coord coord : coords) size += coord.getLastZ() - coord.getFirstZ() + 1;
+        return size;
+    }
 
-	public CoordArray(Coord coord) {
-		coords = new Coord[1];
-		coords[0] = coord;
-	}
+    public boolean containsCoord(Coord coord) {
+        for (Coord own : coords)
+            if (own.containsCoord(coord))
+                return true;
+        return false;
+    }
 
-	public Coord[] getCoords() {
-		return coords.clone();
-	}
+    public boolean touchesCoord(Coord coord) {
+        for (Coord own : coords) if (own.touchesCoord(coord)) return true;
+        return false;
+    }
 
-	public boolean containsCoord(Coord coord) {
-		boolean found = false;
-		for (int i = 0; i < coords.length; i++)
-			if (coords[i].containsCoord(coord))
-				found = true;
-		return found;
-	}
+    public boolean touchesCoords(CoordArray coordArray) {
+        for (Coord coord : coordArray.coords)
+            for (Coord own : coords)
+                if (coord.touchesCoord(own)) return true;
+        return false;
+    }
 
-	public boolean touchesCoords(Coord[] coordArray) {
-		boolean touches = false;
-		for (int i = 0; i < coordArray.length; i++) {
-			for (int x = 0; x < coords.length; x++)
-				if (coordArray[i].touchesCoord(coords[x])) {
-					touches = true;
-					break;
-				}
-			if (touches)
-				break;
-		}
-		return touches;
-	}
+    public void addCoord(Coord coord) {
+        boolean added = false;
+        for (int i = 0; i < coords.length; i++)
+            if(coords[i].addCoord(coord)) {
+                added = true;
+                // TODO: Fix all for loops so they actually edit the arrays
+            }
+        if (added) return;
 
-	public boolean touchesCoords(CoordArray coordArray) {
-		return touchesCoords(coordArray.coords.clone());
-	}
+        Coord[] revised = new Coord[coords.length + 1];
+        for (int i = 0; i < coords.length; i++) revised[i] = coords[i];
+        revised[revised.length - 1] = coord;
+        coords = revised;
+    }
 
-	public void addCoord(Coord coord) {
-		boolean found = false;
-		for (int i = 0; i < coords.length; i++) {
-			found = coords[i].addCoord(coord);
-			if (found)
-				break;
-		}
+    public void addCoords(Coord... coords) {
+        for (Coord coord : coords) addCoord(coord);
+    }
 
-		if (!found) {
-			Coord[] copy = new Coord[coords.length + 1];
-			for (int i = 0; i < coords.length; i++) {
-				copy[i] = coords[i];
-			}
-			copy[copy.length - 1] = coord;
-			coords = copy;
-		}
-	}
+    public void addCoords(CoordArray coordArray) {
+        addCoords(coordArray.coords);
+    }
 
-	public void addCoords(Coord[] coords) {
-		for (int i = 0; i < coords.length; i++) {
-			addCoord(coords[i]);
-		}
-	}
+    public void removeCoord(Coord coord) {
+        ArrayList<Coord> revised = new ArrayList<Coord>(Arrays.asList(coords));
+        //Coord[] revised = coords;
+        for (int i = 0; i < revised.size(); i++) {
+            Coord[] result = revised.get(i).removeCoord(coord);
+            if (result.length == 1) {
+                if (result[0] == null) {
+                    revised.remove(i);
+                } else {
+                    revised.set(i, result[0]);
+                }
+            } else {
+                revised.set(i, result[0]);
+                if (result[1] != null)
+                    revised.add(result[1]);
+            }
+        }
 
-	public void addCoords(CoordArray coordArray) {
-		addCoords(coordArray.coords.clone());
-	}
+        coords = (Coord[]) revised.toArray();
+    }
 
-	public void removeCoord(Coord coord) {
-		ArrayList<Coord> revised = new ArrayList<Coord>(Arrays.asList(coords));
-		for (int i = 0; i < revised.size(); i++) {
-			Coord[] result = revised.get(i).removeCoord(coord);
-			if (result.length == 1) {
-				if (result[0] == null) {
-					revised.remove(i);
-				} else {
-					revised.set(i, result[0]);
-				}
-			} else {
-				revised.set(i, result[0]);
-				if (result[1] != null)
-					revised.add(result[1]);
-			}
-		}
+    public void removeCoords(Coord... coords) {
+        for (Coord coord : coords) removeCoord(coord);
+    }
 
-		coords = (Coord[]) revised.toArray();
-	}
+    public void removeCoords(CoordArray coordArray) {
+        removeCoords(coordArray.coords);
+    }
 
-	public void removeCoords(Coord[] coords) {
-		for (int i = 0; i < coords.length; i++) {
-			removeCoord(coords[i]);
-		}
-	}
+    public void removeEntireCoord(int index) {
+        Coord[] revised = coords;
+        for (int i = index; i < coords.length - 1; i++)
+            revised[i] = revised[i + 1];
+        coords = new Coord[revised.length - 1];
+        for (int i = 0; i < coords.length; i++)
+            coords[i] = revised[i];
+    }
 
-	public void removeCoords(CoordArray coordArray) {
-		removeCoords(coordArray.coords.clone());
-	}
+    public CoordArray overLap(CoordArray coordArray) {
+        for (int i = 0; i < coordArray.coords.length; i++) {
+            Coord coord = coordArray.coords[i];
+            boolean found = false;
+            for (Coord own : coords) {
+                if (own.touchesCoord(coord)) {
+                    found = true;
+                    coord = own.overLap(coord);
+                }
+            }
+            if (!found) coordArray.removeEntireCoord(i);
+        }
+        return coordArray;
+    }
 
-	public Coord getCoord(int index) {
-		return coords[index];
-	}
-
-	public String getCoordString() {
-		String string = "";
-		for (int i = 0; i < coords.length; i++) {
-			string += coords[i].getString();
-			string += ";";
-		}
-		return string;
-	}
+    public String getCoordString() {
+        String string = "";
+        for (int i = 0; i < coords.length; i++) {
+            string += coords[i].getString();
+            string += ";";
+        }
+        return string;
+    }
 }
